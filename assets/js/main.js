@@ -15,30 +15,27 @@ $(document).ready(function () {
         return;
     }
 
-    // 1. Destroy Slick *before* clearing the HTML
     if ($carousel.hasClass("slick-initialized")) {
-        $carousel.slick("unslick"); // Use "unslick" for complete removal
-        $carousel.empty();       // Clear HTML *after* unslick
+        $carousel.slick("unslick");
+        $carousel.empty();
     } else {
-        $carousel.empty();       // Clear HTML if Slick wasn't initialized
+        $carousel.empty();
     }
-
-
 
     const buildImagePath = (filename) => `./assets/images/${filename}`;
 
     const fragment = document.createDocumentFragment();
     images.forEach((image) => {
         const div = document.createElement("div");
+        div.classList.add("slide-container");
         div.innerHTML = `
-            <img data-lazy="${buildImagePath(image)}" alt="Project Screenshot" role="img">
+            <img data-lazy="${buildImagePath(image)}" alt="Project Screenshot" role="img" style="display: none;">
+            <div class="image-loader"></div>
         `;
         fragment.appendChild(div);
     });
 
     $carousel.append(fragment);
-
-    // 2. Initialize Slick *after* completely clearing and rebuilding the HTML
 
     $carousel.slick({
         infinite: true,
@@ -53,9 +50,25 @@ $(document).ready(function () {
 
     $(".slick-dots").attr("aria-label", "Carousel navigation");
 
+    $carousel.find("img").each(function() {
+        const $img = $(this);
+        const $loader = $img.parent().find(".image-loader");
+
+        $img.on("load", function() {
+            $loader.hide();
+            $img.show();
+        });
+
+        $img.on("error", function(){
+            console.error("Error loading image:", $img.attr("data-lazy"));
+            $loader.hide();
+            $img.show(); // Or a placeholder
+        });
+    });
+
+
     $sideMenu.hide();
     $lightbox.fadeIn().css("display", "flex");
-
 }
   
 
