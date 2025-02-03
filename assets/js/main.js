@@ -1,42 +1,63 @@
 $(document).ready(function () {
   function openLightbox(element) {
-    var images = JSON.parse(
-      element.closest(".project-card").getAttribute("data-images")
-    );
-    var carousel = $(".lightbox__carousel");
+    const $lightbox = $("#lightbox");
+    const $sideMenu = $(".side-menu");
+    const $carousel = $(".lightbox__carousel");
 
-    // Clear previous images
-    carousel.html("");
+    const projectCard = element.closest(".project-card");
+    if (!projectCard) return;
 
-    // Add new images dynamically using a document fragment
-    var fragment = document.createDocumentFragment();
-    images.forEach((image) => {
-      var div = document.createElement("div");
-      div.innerHTML = `<img data-lazy="./assets/images/${image}" alt="Project Screenshot">`;
-      fragment.appendChild(div);
-    });
-    carousel.append(fragment);
-
-    // Destroy previous Slick instance if it exists
-    if (carousel.hasClass("slick-initialized")) {
-      carousel.slick("unslick");
+    let images;
+    try {
+        images = JSON.parse(projectCard.getAttribute("data-images"));
+    } catch (error) {
+        console.error("Failed to parse images:", error);
+        return;
     }
 
-    // Initialize Slick Carousel
-    carousel.slick({
-      infinite: true,
-      slidesToShow: 1,
-      slidesToScroll: 1,
-      arrows: false,
-      dots: true,
-      lazyLoad: "ondemand", // Enable lazy loading
-      accessibility: true, // Enable accessibility features
+    // 1. Destroy Slick *before* clearing the HTML
+    if ($carousel.hasClass("slick-initialized")) {
+        $carousel.slick("unslick"); // Use "unslick" for complete removal
+        $carousel.empty();       // Clear HTML *after* unslick
+    } else {
+        $carousel.empty();       // Clear HTML if Slick wasn't initialized
+    }
+
+
+
+    const buildImagePath = (filename) => `./assets/images/${filename}`;
+
+    const fragment = document.createDocumentFragment();
+    images.forEach((image) => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+            <img data-lazy="${buildImagePath(image)}" alt="Project Screenshot" role="img">
+        `;
+        fragment.appendChild(div);
     });
 
-    // Show lightbox
-    $(".side-menu").hide();
-    $("#lightbox").fadeIn().css("display", "flex");
-  }
+    $carousel.append(fragment);
+
+    // 2. Initialize Slick *after* completely clearing and rebuilding the HTML
+
+    $carousel.slick({
+        infinite: true,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        arrows: false,
+        dots: true,
+        lazyLoad: "ondemand",
+        accessibility: true,
+        aria: true,
+    });
+
+    $(".slick-dots").attr("aria-label", "Carousel navigation");
+
+    $sideMenu.hide();
+    $lightbox.fadeIn().css("display", "flex");
+
+}
+  
 
   function closeLightbox() {
     $("#lightbox").fadeOut().css("display", "none");
