@@ -1,4 +1,15 @@
 $(document).ready(function () {
+  var email = 'shamscsediu' + '@' + 'gmail.com';
+  var mailtoLink = 'mailto:' + email;
+
+  // Set the href attribute
+  $('#email-link').attr('href', mailtoLink);
+  // Ensure clicking works by forcing the redirect
+  $('#email-link').on('click', function(event) {
+    event.preventDefault(); // Prevent any residual default behavior
+    window.location.href = mailtoLink; // Force the mailto action
+  });
+
   function openLightbox(element) {
     const $lightbox = $("#lightbox");
     const $sideMenu = $(".side-menu");
@@ -70,7 +81,7 @@ $(document).ready(function () {
     $sideMenu.hide();
     $lightbox.fadeIn().css("display", "flex");
 }
-  
+
 
   function closeLightbox() {
     $("#lightbox").fadeOut().css("display", "none");
